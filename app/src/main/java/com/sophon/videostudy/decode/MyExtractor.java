@@ -1,4 +1,4 @@
-package com.sophon.videostudy.decode.vedio;
+package com.sophon.videostudy.decode;
 
 import android.media.MediaExtractor;
 import android.media.MediaFormat;
@@ -8,21 +8,13 @@ import java.nio.ByteBuffer;
 
 public class MyExtractor {
 
-    private MediaFormat audioFormat;
-    private int audioTrackId;
-    private int videoTrackId;
-    MediaFormat videoFormat;
-    MediaExtractor mediaExtractor;
-    private long curSampleTime;
-    int curSampleFlags ;
-
-    public int getSampleFlags() {
-        return curSampleFlags;
-    }
-
-    public long getSampleTime() {
-        return curSampleTime;
-    }
+    public MediaFormat audioFormat;
+    public int audioTrackId;
+    public int videoTrackId;
+    public MediaFormat videoFormat;
+    public MediaExtractor mediaExtractor;
+    public long curSampleTime;
+    public int curSampleFlags;
 
     public MyExtractor(String path) {
         try {
@@ -52,12 +44,12 @@ public class MyExtractor {
         }
     }
 
-    public void release(){
+    public void release() {
         mediaExtractor.release();
     }
 
 
-    public void selectTrack(int trackId){
+    public void selectTrack(int trackId) {
         mediaExtractor.selectTrack(trackId);
     }
 
@@ -85,22 +77,6 @@ public class MyExtractor {
         //进入下一帧
         mediaExtractor.advance();
         return buffercount;
-    }
-
-    public MediaFormat getVideoFormat() {
-        return videoFormat;
-    }
-
-    public MediaFormat getAudioFormat() {
-        return audioFormat;
-    }
-
-    public int getVideoTrackId() {
-        return videoTrackId;
-    }
-
-    public int getAudioTrackId() {
-        return audioTrackId;
     }
 
 
