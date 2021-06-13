@@ -9,8 +9,15 @@ import android.view.SurfaceView;
 import android.view.View;
 import android.widget.Toast;
 
+import com.sophon.videostudy.decode.audio.AudioDecode;
+import com.sophon.videostudy.decode.BaseDecode;
 import com.sophon.videostudy.decode.vedio.VideoDecode;
 import com.sophon.videostudy.utils.FileUtils;
+
+import java.util.ArrayList;
+import java.util.List;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
@@ -19,9 +26,9 @@ import androidx.core.app.ActivityCompat;
 public class MainActivity extends AppCompatActivity {
 
     private final int REQUEST = 1;
-    private VideoDecode videoDecode;
     private SurfaceView surfaceView;
     public String TAG = "rui";
+    public List<BaseDecode> baseDecodeList = new ArrayList<>();
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -59,10 +66,14 @@ public class MainActivity extends AppCompatActivity {
         surfaceHolder.addCallback(new SurfaceHolder.Callback() {
             @Override
             public void surfaceCreated(@NonNull SurfaceHolder holder) {
-                if (videoDecode == null) {
-                    videoDecode = new VideoDecode(dirPath + "/test.mp4",holder.getSurface());
-                }
-                new Thread(videoDecode).start();
+                baseDecodeList.clear();
+                ExecutorService mExecutorService = Executors.newFixedThreadPool(2);
+                VideoDecode videoDecode = new VideoDecode(dirPath + "/test.mp4",holder.getSurface());
+                AudioDecode audioEncode = new AudioDecode(dirPath + "/test.mp4",null);
+                baseDecodeList.add(videoDecode);
+                baseDecodeList.add(audioEncode);
+                mExecutorService.execute(videoDecode);
+                mExecutorService.execute(audioEncode);
             }
 
             @Override
@@ -72,7 +83,9 @@ public class MainActivity extends AppCompatActivity {
 
             @Override
             public void surfaceDestroyed(@NonNull SurfaceHolder holder) {
-                videoDecode.stop();
+                for(BaseDecode baseDecode:baseDecodeList){
+                    baseDecode.stop();
+                }
             }
         });
         surfaceView.setVisibility(View.VISIBLE);

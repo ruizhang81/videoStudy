@@ -2,6 +2,7 @@ package com.sophon.videostudy.decode;
 
 import android.media.MediaCodec;
 import android.media.MediaFormat;
+import android.os.Build;
 import android.view.Surface;
 
 import java.io.IOException;
@@ -56,10 +57,15 @@ public abstract class BaseDecode implements Runnable {
                 int inputBufferId = mediaCodec.dequeueInputBuffer(TIME_US);
 
                 if (inputBufferId > 0) {
-                    ByteBuffer inputBuffer = mediaCodec.getInputBuffer(inputBufferId);
+                    ByteBuffer inputBuffer;
+                    if (Build.VERSION.SDK_INT >= 21) {
+                        inputBuffer = mediaCodec.getInputBuffer(inputBufferId);
+                    } else {
+                        ByteBuffer[] mInputBuffers = mediaCodec.getInputBuffers();
+                        inputBuffer = mInputBuffers[inputBufferId];
+                    }
                     if (inputBuffer != null) {
-                        int size = extractor.readBuffer(inputBuffer);//下一
-                        //解析数据
+                        int size = extractor.readBuffer(decodeType() == VIDEO,inputBuffer);
                         if (size >= 0) {
                             mediaCodec.queueInputBuffer(
                                     inputBufferId,
@@ -115,4 +121,25 @@ public abstract class BaseDecode implements Runnable {
     protected abstract boolean handleOutputData(MediaCodec.BufferInfo info);
 
 
+    private long startMs = -1;
+    /**
+     * 数据的时间戳对齐
+     **/
+    protected void sleepRender(MediaCodec.BufferInfo info) {
+        if (startMs == -1) {
+            startMs = System.currentTimeMillis();
+        }
+        long ptsTimes = info.presentationTimeUs / 1000;
+        long systemTimes = System.currentTimeMillis() - startMs;
+        long timeDifference = ptsTimes - systemTimes;
+        // 如果当前帧比系统时间差快了，则延时以下
+        if (timeDifference > 0) {
+            try {
+                Thread.sleep(timeDifference);
+            } catch (InterruptedException e) {
+                e.printStackTrace();
+            }
+
+        }
+    }
 }

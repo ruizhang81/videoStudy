@@ -8,10 +8,6 @@ import com.sophon.videostudy.decode.BaseDecode;
 
 public class VideoDecode extends BaseDecode {
 
-
-    // 用于对准视频的时间戳
-    private long startMs = -1;
-
     public VideoDecode(String path,Surface surface) {
         super(path,surface);
     }
@@ -31,11 +27,8 @@ public class VideoDecode extends BaseDecode {
         //等到拿到输出的buffer下标
         int outputId = mediaCodec.dequeueOutputBuffer(info, TIME_US);
         if (outputId >= 0) {
-            if (startMs == -1) {
-                startMs = System.currentTimeMillis();
-            }
             //矫正pts
-            sleepRender(info, startMs);
+            sleepRender(info);
             mediaCodec.releaseOutputBuffer(outputId, true);
         }
         // 在所有解码后的帧都被渲染后，就可以停止播放了
@@ -46,22 +39,6 @@ public class VideoDecode extends BaseDecode {
         return false;
     }
 
-    /**
-     * 数据的时间戳对齐
-     **/
-    private void sleepRender(MediaCodec.BufferInfo info, long startMs) {
-        long ptsTimes = info.presentationTimeUs / 1000;
-        long systemTimes = System.currentTimeMillis() - startMs;
-        long timeDifference = ptsTimes - systemTimes;
-        // 如果当前帧比系统时间差快了，则延时以下
-        if (timeDifference > 0) {
-            try {
-                Thread.sleep(timeDifference);
-            } catch (InterruptedException e) {
-                e.printStackTrace();
-            }
 
-        }
-    }
 
 }

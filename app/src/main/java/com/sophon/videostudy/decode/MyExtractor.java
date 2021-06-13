@@ -8,13 +8,13 @@ import java.nio.ByteBuffer;
 
 public class MyExtractor {
 
-    public MediaFormat audioFormat;
-    public int audioTrackId;
-    public int videoTrackId;
-    public MediaFormat videoFormat;
-    public MediaExtractor mediaExtractor;
-    public long curSampleTime;
-    public int curSampleFlags;
+    MediaFormat audioFormat;
+    int audioTrackId;
+    int videoTrackId;
+    MediaFormat videoFormat;
+    MediaExtractor mediaExtractor;
+    long curSampleTime;
+    int curSampleFlags;
 
     public MyExtractor(String path) {
         try {
@@ -59,12 +59,12 @@ public class MyExtractor {
      * @param buffer
      * @return
      */
-    public int readBuffer(ByteBuffer buffer) {
+    public int readBuffer(boolean isVideo,ByteBuffer buffer) {
         //先清空数据
         buffer.clear();
         //选择要解析的轨道
-//          mediaExtractor.selectTrack(video ? videoTrackId : audioTrackId);
-        mediaExtractor.selectTrack(videoTrackId);
+        mediaExtractor.selectTrack( isVideo ? videoTrackId : audioTrackId);
+//        mediaExtractor.selectTrack(videoTrackId);
         //读取当前帧的数据
         int buffercount = mediaExtractor.readSampleData(buffer, 0);
         if (buffercount < 0) {
